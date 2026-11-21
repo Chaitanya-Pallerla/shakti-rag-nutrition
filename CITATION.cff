@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use SHAKTI, please cite it as below."
+title: "SHAKTI: Evidence-Grounded Conversational AI for Nutrition and Health"
+type: software
+authors:
+  - family-names: Pallerla
+    given-names: Chaitanya
+    email: pallerla@uark.edu
+    affiliation: University of Arkansas
+  - family-names: Wang
+    given-names: Dongyi
+    email: dongyiw@uark.edu
+    affiliation: University of Arkansas
+date-released: 2026-11-21
+license: MIT
+repository-code: "https://github.com/Chaitanya-Pallerla/shakti-rag-nutrition"
+keywords:
+  - retrieval-augmented generation
+  - nutrition
+  - health
+  - large language models
+  - hallucination detection
+  - OpenAlex
+  - MCP

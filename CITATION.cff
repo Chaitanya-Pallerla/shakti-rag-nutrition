@@ -6,11 +6,11 @@ authors:
   - family-names: Pallerla
     given-names: Chaitanya
     email: pallerla@uark.edu
-    affiliation: University of Arkansas
+    affiliation: "Department of Biological and Agricultural Engineering, University of Arkansas"
   - family-names: Wang
     given-names: Dongyi
     email: dongyiw@uark.edu
-    affiliation: University of Arkansas
+    affiliation: "Department of Biological and Agricultural Engineering, University of Arkansas"
 date-released: 2026-11-21
 license: MIT
 repository-code: "https://github.com/Chaitanya-Pallerla/shakti-rag-nutrition"

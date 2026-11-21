@@ -445,7 +445,7 @@ Add `--mask abstract` to `rag_search.py search` for the abstract-only runs. Each
 | **Chaitanya Pallerla** | Author | [pallerla@uark.edu](mailto:pallerla@uark.edu) |
 | **Dongyi Wang** | Advisor | [dongyiw@uark.edu](mailto:dongyiw@uark.edu) |
 
-University of Arkansas
+Department of Biological and Agricultural Engineering, University of Arkansas
 
 Questions, data requests and collaboration: email us or [open an issue](https://github.com/Chaitanya-Pallerla/shakti-rag-nutrition/issues).
 

@@ -1,0 +1,23 @@
+# your settings and keys: never commit
+shakti.env
+*.env
+!shakti.env.example
+
+# data, indexes, models, logs (large / private)
+shakti_research/
+shakti_serve_index/
+models/
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.npy
+*.npz
+*.jsonl
+*.log
+admin_token.txt
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/

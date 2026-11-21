@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nutrition evidence assistant: research study</title>
+<style>
+  :root { --ink:#1d1d1b; --ink2:#55534e; --line:#e2e0da; --bg:#f7f6f3; --card:#fff; --acc:#2a78d6; --warn:#a15c00; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 1.35rem; margin: 8px 0 4px; }
+  h2 { font-size: 1.1rem; margin: 0 0 8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin:14px 0; }
+  .muted { color:var(--ink2); font-size:.92rem; }
+  label { display:block; margin:8px 0; }
+  select, textarea, input[type=text] { width:100%; font:inherit; padding:9px; border:1px solid #cfccc4; border-radius:8px; background:#fff; }
+  textarea { min-height: 84px; resize: vertical; }
+  button { font:inherit; padding:9px 16px; border-radius:8px; border:1px solid var(--acc); background:var(--acc); color:#fff; cursor:pointer; }
+  button.secondary { background:#fff; color:var(--acc); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .answer { white-space: pre-wrap; }
+  .paper { border-top:1px solid var(--line); padding:8px 0; font-size:.93rem; }
+  .paper a { color:var(--acc); }
+  .quote { margin:4px 0 0 12px; padding-left:8px; border-left:3px solid #cfe0f5; color:var(--ink2); font-style:italic; }
+  .likert { display:grid; grid-template-columns: 1fr repeat(5, 44px); gap:4px; align-items:center; margin:6px 0; font-size:.93rem; }
+  .likert .h { text-align:center; color:var(--ink2); font-size:.78rem; }
+  .likert input { justify-self:center; width:20px; height:20px; }
+  .err { color:#b3261e; }
+  .notice { border-left:4px solid var(--warn); padding:8px 12px; background:#fff8ec; font-size:.92rem; }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid #cfe0f5; border-top-color:var(--acc); border-radius:50%; animation:s 1s linear infinite; vertical-align:-2px; margin-right:6px; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Nutrition evidence assistant: research study</h1>
+  <p class="muted">An AI assistant that answers nutrition and health questions from published research papers and shows its sources.</p>
+
+  <!-- consent -->
+  <section id="consent" class="card">
+    <h2>About this study</h2>
+    <p>We are testing how well an AI assistant answers nutrition and health questions using scientific papers. You will ask up to <span id="maxq">8</span> questions of your own, read each answer and its sources, and rate it. It takes about 10 to 15 minutes.</p>
+    <ul>
+      <li><b>Anonymous.</b> We do not ask for your name, email or any personal or health details, and we do not store your IP address. Please do not type personal information in your questions.</li>
+      <li><b>What we store:</b> your questions, the answers, your ratings and comments, and the two optional background questions below, for research analysis and publication in aggregate.</li>
+      <li><b>Voluntary.</b> You can stop at any time by closing the page.</li>
+      <li><b>Not medical advice.</b> Answers are generated automatically from research abstracts, may be wrong or incomplete, and are not a substitute for a doctor or dietitian. In an emergency, contact local emergency services.</li>
+    </ul>
+    <p class="muted">Questions about the study: <span id="contact">[researcher contact to be added]</span></p>
+    <label><input type="checkbox" id="adult"> I am 18 years or older.</label>
+    <label><input type="checkbox" id="agree"> I have read the information above and agree to take part.</label>
+    <label>Which best describes you? (optional)
+      <select id="role">
+        <option value="">Prefer not to say</option>
+        <option>Member of the public</option>
+        <option>Student</option>
+        <option>Health professional (clinician, dietitian, nurse, ...)</option>
+        <option>Researcher</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <label>How much do you know about nutrition science? (optional)
+      <select id="background">
+        <option value="">Prefer not to say</option>
+        <option>Little or none</option>
+        <option>Some (general interest)</option>
+        <option>A lot (studied or work in the field)</option>
+      </select>
+    </label>
+    <button id="start">Start</button> <span id="startErr" class="err"></span>
+  </section>
+
+  <!-- ask -->
+  <section id="askCard" class="card hidden">
+    <h2>Ask a nutrition or health question</h2>
+    <p class="muted">For example: "Does eating nuts lower cholesterol?" or "Is intermittent fasting better than calorie restriction for weight loss?" You have <span id="left"></span> question(s) left.</p>
+    <textarea id="q" maxlength="600" placeholder="Type your question..."></textarea>
+    <p><button id="askBtn">Ask</button> <button id="finishBtn" class="secondary">Finish the study</button> <span id="askErr" class="err"></span></p>
+  </section>
+
+  <!-- wait -->
+  <section id="waitCard" class="card hidden"><span class="spinner"></span><span id="waitMsg">Searching 230 million papers and writing an answer. This usually takes 20 to 60 seconds.</span></section>
+
+  <!-- answer + rating -->
+  <section id="ansCard" class="card hidden">
+    <h2>Answer</h2>
+    <p class="muted" id="ansQ"></p>
+    <div class="answer" id="ansText"></div>
+    <div class="notice" style="margin-top:10px">Research information, not medical advice.</div>
+    <h2 style="margin-top:16px">Sources</h2>
+    <div id="papers"></div>
+  </section>
+
+  <section id="rateCard" class="card hidden">
+    <h2>Please rate this answer</h2>
+    <div class="likert"><span></span><span class="h">Strongly disagree</span><span class="h"></span><span class="h"></span><span class="h"></span><span class="h">Strongly agree</span></div>
+    <div id="likerts"></div>
+    <label><input type="checkbox" id="harm"> The answer contained something wrong or potentially harmful.</label>
+    <label>Comment (optional)<textarea id="comment" maxlength="1000"></textarea></label>
+    <button id="rateBtn">Submit rating</button> <span id="rateErr" class="err"></span>
+  </section>
+
+  <!-- final -->
+  <section id="finalCard" class="card hidden">
+    <h2>Last two questions</h2>
+    <p class="muted">1 = strongly disagree, 7 = strongly agree.</p>
+    <label>This assistant's capabilities meet my requirements.<select id="u1"><option value="">Choose...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
+    <label>This assistant is easy to use.<select id="u2"><option value="">Choose...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
+    <label>Anything else you would like to tell us? (optional)<textarea id="fcomment" maxlength="2000"></textarea></label>
+    <button id="finalBtn">Submit and finish</button> <span id="finalErr" class="err"></span>
+  </section>
+
+  <section id="thanks" class="card hidden"><h2>Thank you!</h2><p>Your responses have been recorded. You can close this page.</p></section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const show = (id, on = true) => $(id).classList.toggle("hidden", !on);
+const ITEMS = [["relevance", "The answer addressed my question."],
+               ["evidence", "The cited papers seemed to support the answer."],
+               ["clarity", "The answer was clear and easy to understand."],
+               ["trust", "I would trust this answer."],
+               ["satisfaction", "Overall, I am satisfied with this answer."]];
+let sid = null, job = null, left = 0;
+
+for (const [k, text] of ITEMS) {
+  const row = document.createElement("div"); row.className = "likert";
+  const lab = document.createElement("span"); lab.textContent = text; row.appendChild(lab);
+  for (let v = 1; v <= 5; v++) {
+    const r = document.createElement("input"); r.type = "radio"; r.name = k; r.value = v;
+    r.setAttribute("aria-label", text + " " + v); row.appendChild(r);
+  }
+  $("likerts").appendChild(row);
+}
+
+async function post(url, body) {
+  const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({error: "Network error"}));
+  if (!r.ok || j.error) throw new Error(j.error || "Request failed");
+  return j;
+}
+
+$("start").onclick = async () => {
+  $("startErr").textContent = "";
+  if (!$("adult").checked || !$("agree").checked) { $("startErr").textContent = "Please confirm both boxes to take part."; return; }
+  try {
+    const j = await post("/api/session", {consent: true, adult: true, role: $("role").value, background: $("background").value});
+    sid = j.sid; left = j.max_questions; $("left").textContent = left;
+    show("consent", false); show("askCard");
+  } catch (e) { $("startErr").textContent = e.message; }
+};
+
+$("askBtn").onclick = async () => {
+  $("askErr").textContent = "";
+  const q = $("q").value.trim();
+  if (q.length < 8) { $("askErr").textContent = "Please type a full question."; return; }
+  $("askBtn").disabled = true;
+  try {
+    const j = await post("/api/ask", {sid, question: q});
+    job = j.job; left = j.remaining;
+    show("askCard", false); show("ansCard", false); show("rateCard", false); show("waitCard");
+    $("ansQ").textContent = "Your question: " + q;
+    poll();
+  } catch (e) { $("askErr").textContent = e.message; }
+  $("askBtn").disabled = false;
+};
+
+async function poll() {
+  const r = await fetch("/api/job?id=" + job).then(r => r.json()).catch(() => ({status: "retry"}));
+  if (r.status === "done") return render(r.result);
+  if (r.status === "error") { show("waitCard", false); show("askCard"); $("askErr").textContent = r.error; return; }
+  $("waitMsg").textContent = r.status === "queued" && r.queue > 1
+    ? "Waiting for other participants' questions (position " + r.queue + ")..."
+    : "Searching 230 million papers and writing an answer. This usually takes 20 to 60 seconds.";
+  setTimeout(poll, 2500);
+}
+
+function render(res) {
+  show("waitCard", false);
+  $("ansText").textContent = res.answer || "(no answer)";
+  const box = $("papers"); box.innerHTML = "";
+  const cited = new Set(res.citations || []);
+  const quotes = {};
+  for (const q of res.quotes || []) (quotes[q.paper] = quotes[q.paper] || []).push(q.quote);
+  const list = (res.papers || []).filter(p => cited.has(p.n));
+  for (const p of (list.length ? list : res.papers || [])) {
+    const d = document.createElement("div"); d.className = "paper";
+    const a = document.createElement("a");
+    a.href = p.doi ? "https://doi.org/" + p.doi : "https://openalex.org/" + p.id;
+    a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.textContent = "[" + p.n + "] " + (p.title || "(untitled)");
+    d.appendChild(a);
+    const m = document.createElement("div"); m.className = "muted";
+    m.textContent = [p.year, p.venue].filter(Boolean).join(", "); d.appendChild(m);
+    for (const qt of quotes[p.n] || []) { const b = document.createElement("div"); b.className = "quote"; b.textContent = "“" + qt + "”"; d.appendChild(b); }
+    box.appendChild(d);
+  }
+  if (!box.children.length) box.textContent = "No sources were used.";
+  document.querySelectorAll("#likerts input").forEach(i => i.checked = false);
+  $("harm").checked = false; $("comment").value = "";
+  show("ansCard"); show("rateCard");
+}
+
+$("rateBtn").onclick = async () => {
+  $("rateErr").textContent = "";
+  const body = {sid, job, harm: $("harm").checked, comment: $("comment").value};
+  for (const [k] of ITEMS) { const c = document.querySelector("input[name=" + k + "]:checked"); body[k] = c ? c.value : ""; }
+  try {
+    await post("/api/rate", body);
+    show("ansCard", false); show("rateCard", false);
+    $("q").value = ""; $("left").textContent = left;
+    if (left > 0) show("askCard"); else show("finalCard");
+  } catch (e) { $("rateErr").textContent = e.message; }
+};
+
+$("finishBtn").onclick = () => { show("askCard", false); show("finalCard"); };
+
+$("finalBtn").onclick = async () => {
+  try {
+    await post("/api/final", {sid, umux_capabilities: $("u1").value, umux_easy: $("u2").value, comment: $("fcomment").value});
+    show("finalCard", false); show("thanks");
+  } catch (e) { $("finalErr").textContent = e.message; }
+};
+</script>
+</body>
+</html>
